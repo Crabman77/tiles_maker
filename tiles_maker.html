@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<title>Créateur de textures parquet raccordables</title>
+		<meta charset="utf-8">
+		<style>
+			body {
+				color: white;
+				background-color: black;
+			}
+			div.center {
+				text-align: center;
+				margin-left: auto;
+				margin-right: auto;
+			}
+			#canvas {
+				color: black;
+				background-color: white;
+				border:2px solid blue;
+			}
+			div.buttons {
+				display:inline-block;
+				height:50px;
+				margin: 5px 30px 5px 30px; 
+			}
+		</style>
+		<script>
+			var canvas;
+			var ctx;
+			var join_type = true;
+			var img_taille = 1024;
+			var color = "Black";
+			var tile_w = 9;
+			var tile_h = 3;
+			var joins = 1;
+			var is_normal = false;
+			var img = new Image();
+			function draw()
+			{
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				if (img.src){
+					let j_w = tile_w*joins;
+					let j_h = tile_h*joins;
+					let sw = (img_taille - j_w) / tile_w;
+					let sh = (img_taille - j_h) / tile_h;
+					if (img.width <= sw || img.height <= sh)
+					{
+							alert("Attention, l'image source est trop petite pour former une tuile(latte) sur cette définition.\n1) Modifiez la largeur/longueur.\n2) Réduisez la définition de l'image finale.\n3) Chargez une plus grande texture.");
+					}
+					if(is_normal)
+					{
+						ctx.fillStyle = "rgb(0, 0, 0)";
+					} else
+					{
+						ctx.fillStyle = color;
+					}
+					ctx.fillRect(0, 0, canvas.width, canvas.height);
+					ctx.fillStyle = "white";
+					let line = 0;
+					if (join_type == 0)
+					{
+						for (let y = 0; y < tile_h; y++)	
+						{
+							for (let x = 0; x < tile_w; x++)
+							{
+								let px = rand(0, img.width-sw);
+								let py = rand(0, img.height-sh);
+								if(!is_normal)
+								{	
+									ctx.drawImage(img, px, py, sw, sh, (sw*x)+(joins*x), (sh*y)+(joins*y), sw, sh);
+								} else
+								{
+									ctx.fillRect((sw*x)+(joins*x), (sh*y)+(joins*y), sw, sh);
+								}
+							}
+						}
+					} else if (join_type == 1)
+					{
+						
+						for (let y = 0; y < tile_h; y++)	
+						{
+							for (let x = 0; x < tile_w; x++)
+							{
+								let px = rand(0, img.width-sw);
+								let py = rand(0, img.height-sh);
+								if (line == 0)
+								{
+									if(!is_normal)
+									{	
+										ctx.drawImage(img, px, py, sw, sh, (sw*x)+(joins*x), (sh*y)+(joins*y), sw, sh);
+									} else
+									{
+										ctx.fillRect((sw*x)+(joins*x), (sh*y)+(joins*y), sw, sh);
+									}
+								} else
+								{
+									if(!is_normal)
+									{
+										ctx.drawImage(img, px, py, sw, sh, (sw*x)+(joins*x)-(sw/2), (sh*y)+(joins*y), sw, sh);
+									} else
+									{
+										ctx.fillRect((sw*x)+(joins*x)-(sw/2), (sh*y)+(joins*y), sw, sh);
+									}
+									if (x == 0)
+									{
+										if(!is_normal)
+										{	
+											ctx.drawImage(img, px, py, sw, sh, (sw*tile_w)+(joins*tile_w)-(sw/2), (sh*y)+(joins*y), sw, sh);
+										} else
+										{
+											ctx.fillRect((sw*tile_w)+(joins*tile_w)-(sw/2), (sh*y)+(joins*y), sw, sh);
+										}
+									}
+								}
+							}
+							if (line == 0)
+							{
+								line = 1;
+							}else
+							{
+								line = 0;
+							}		
+						}
+					} else
+					{
+						for (let x = 0; x < tile_w; x++)
+						{
+							for (let y = 0; y < tile_h; y++)
+							{
+								let px = rand(0, img.width-sw);
+								let py = rand(0, img.height-sh);
+								if (line == 0)
+								{
+									if(!is_normal)
+									{
+										ctx.drawImage(img, px, py, sw, sh, (sw*x)+(joins*x), (sh*y)+(joins*y), sw, sh);
+									} else
+									{
+										ctx.fillRect((sw*x)+(joins*x), (sh*y)+(joins*y), sw, sh);
+									}
+								} else
+								{
+									if(!is_normal)
+									{
+										ctx.drawImage(img, px, py, sw, sh, (sw*x)+(joins*x), (sh*y)+(joins*y)-(sh/2), sw, sh);
+									} else
+									{
+										ctx.fillRect((sw*x)+(joins*x), (sh*y)+(joins*y)-(sh/2), sw, sh);
+									}
+									if (y == 0)
+									{
+										if(!is_normal)
+										{
+											ctx.drawImage(img, px, py, sw, sh, (sw*x)+(joins*x), (sh*tile_h)+(joins*tile_h)-(sh/2), sw, sh);
+										} else
+										{
+											ctx.fillRect((sw*x)+(joins*x), (sh*tile_h)+(joins*tile_h)-(sh/2), sw, sh);
+										}	
+									}
+								}
+							}
+							if (line == 0)
+							{
+								line = 1;
+							}else
+							{
+								line = 0;
+							}		
+						}
+					}
+				}
+			}
+			window.onload = function()
+			{
+				canvas = document.getElementById('canvas');
+				ctx = canvas.getContext('2d');
+				ctx.font = "bold 40px Arial";
+				
+				var x = document.getElementById("joins");
+				joins = parseInt(x.value);
+				
+				var x = document.getElementById("largeur");
+				tile_w = parseInt(x.value);
+				
+				var x = document.getElementById("longueur");
+				tile_h = parseInt(x.value);
+				
+				var x = document.getElementById("img_taille");
+				img_taille = parseInt(x.value);
+				canvas.width = img_taille;
+				canvas.height = img_taille;
+			}
+			function rand(min, max)
+			{
+				return Math.floor(Math.random() * (max - min + 1)) + min;
+			}
+			function set_join_type()
+			{
+				var x = document.getElementById("join_type");
+				join_type = parseInt(x.value);
+				console.log(join_type);
+				draw();
+			}
+			function set_joins()
+			{
+				var x = document.getElementById("joins");
+				joins = parseInt(x.value);
+				draw();
+			}
+			function set_color()
+			{
+				var x = document.getElementById("color");
+				color = x.value;
+				draw();
+			}			
+			function set_largeur()
+			{
+				var x = document.getElementById("largeur");
+				tile_w = parseInt(x.value);
+				draw();
+			}			
+			function set_longueur()
+			{
+				var x = document.getElementById("longueur");
+				tile_h = parseInt(x.value);
+				draw();
+			}
+			function set_img_taille()
+			{
+				var x = document.getElementById("img_taille");
+				img_taille = parseInt(x.value);
+				canvas.width = img_taille;
+				canvas.height = img_taille;
+				draw();
+			}
+			function set_is_normal()
+			{
+				var x = document.getElementById("normal");
+				is_normal = x.checked;
+				draw();
+			}
+			function loadFile(src)
+			{
+				if(!src.type.match(/image.*/)){
+					console.log("The dropped file is not an image: ", src.type);
+					return;
+				}
+				img = new Image();
+				img.onload = function(){
+					draw();
+				}
+				var reader = new FileReader();
+				reader.onload = function(e){
+					img.src = e.target.result
+				};
+				reader.readAsDataURL(src);
+			}
+			function downloadCanvas(){
+			let canvas = document.getElementById("canvas");
+			if (canvas){
+				let image = canvas.toDataURL();
+				// create temporary link
+				let tmpLink = document.createElement('a');
+				//let n = is_normal ? "" : "_normal";
+				var x = document.getElementById("name");
+				let name = "";
+				if (typeof x.value === 'string' || x.value instanceof String) {
+					name = x.value;
+				}
+				tmpLink.download = (name.length === 0 ? "texture" : name) + '_'+ img_taille + "px_" + (is_normal ? "normal" : "color") + '.png'; // set the name of the download file
+				tmpLink.href = image;
+				// temporarily add link to body and initiate the download
+				document.body.appendChild( tmpLink );
+				tmpLink.click();  
+				document.body.removeChild( tmpLink );
+			}
+		}
+		</script>
+	</head>
+	<body>
+		<div class="center">
+			<h3>Créateur de textures parquet raccordables</h3>
+			<div class="center">
+				<div class="buttons">
+					<label for="file">Image de base:</label>
+					<input type="file" id="file" accept="image/png, image/jpeg" onchange="loadFile(this.files[0])">
+				</div>
+				<div class="buttons">
+					<label for="largeur">Largeur:</label>
+					<select name="largeur" id="largeur" onchange="set_largeur()">
+						<option value="2">2</option>
+						<option value="4">4</option>
+						<option value="6">6</option>
+						<option value="8">8</option>
+						<option value="10" selected="selected">10</option>
+						<option value="12">12</option>
+						<option value="14">14</option>
+						<option value="16">16</option>
+						<option value="18">18</option>
+						<option value="20">20</option>
+						<option value="22">22</option>
+						<option value="24">24</option>
+						<option value="26">26</option>
+						<option value="28">28</option>
+						<option value="30">30</option>
+						<option value="32">32</option>
+						<option value="34">34</option>
+						<option value="36">36</option>
+						<option value="38">38</option>
+						<option value="40">40</option>
+					</select> 
+				</div>			
+				<div class="buttons">
+					<label for="longueur">Longueur:</label>
+					<select name="longueur" id="longueur" onchange="set_longueur()">
+						<option value="2">2</option>
+						<option value="4">4</option>
+						<option value="6">6</option>
+						<option value="8">8</option>
+						<option value="10">10</option>
+						<option value="12">12</option>
+						<option value="14">14</option>
+						<option value="16" selected="selected">16</option>
+						<option value="18">18</option>
+						<option value="20">20</option>
+						<option value="22">22</option>
+						<option value="24">24</option>
+						<option value="26">26</option>
+						<option value="28">28</option>
+						<option value="30">30</option>
+						<option value="32">32</option>
+						<option value="34">34</option>
+						<option value="36">36</option>
+						<option value="38">38</option>
+						<option value="40">40</option>
+					</select> 
+				</div>
+				<div>
+					<div class="buttons">
+						<label for="joins">Joins:</label>
+						<select name="joins" id="joins" onchange="set_joins()">
+							<option value="1">1</option>
+							<option value="2">2</option>
+							<option value="3" selected="selected">3</option>
+							<option value="4">4</option>
+							<option value="5">5</option>
+							<option value="6">6</option>
+							<option value="7">7</option>
+							<option value="8">8</option>
+							<option value="9">9</option>
+							<option value="10">10</option>
+						</select>
+					</div>
+					<div class="buttons">
+						<label for="color">Couleur:</label>
+						<select name="color" id="color" onchange="set_color()">
+							<option value="black" selected="selected">Noir</option>
+							<option value="grey">Gris</option>
+							<option value="Bisque">Bisque</option>
+							<option value="BurlyWood">BurlyWood</option>
+							<option value="DarkSalmon">Saumon</option>
+							<option value="FloralWhite">FloralWhite</option>
+							<option value="Moccasin">Moccasin</option>
+							<option value="MistyRose">MistyRose</option>
+							<option value="LightPink">Rose</option>
+							<option value="Beige">Beige</option>
+							<option value="White">Blanc</option>
+						</select>
+					</div>					
+					<div class="buttons">
+						<label for="join_type">Décalage:</label>
+						<select name="join_type" id="join_type" onchange="set_join_type()">
+							<option value="0">Aucun</option>
+							<option value="1" selected="selected">Horizontal</option>
+							<option value="2">Vertical</option>
+						</select>
+					</div>
+					<div class="buttons">
+						<label for="normal">Joins seul pour carte normal:</label>
+						<input type="checkbox" id="normal" name="normal" onchange="set_is_normal()">
+					</div>
+				</div>	
+				<div>
+					<div class="buttons">
+						<label for="img_taille">Taille image:</label>
+						<select name="img_taille" id="img_taille" onchange="set_img_taille()">
+							<option value="512">512</option>
+							<option value="1024" selected="selected">1024</option>
+							<option value="2048">2048</option>
+							<option value="3072">3072</option>
+							<option value="4096">4096</option>
+						</select>
+					</div>
+					<div class="buttons">
+						<label for="name">Nom(taille et type ajouté automatiquement):</label>
+						<input type="text" id="name" name="name" required minlength="2" maxlength="40" size="10">
+					</div>
+					<div class="buttons">
+						<button type="button" onclick="downloadCanvas()">Enregistrer Image</button>
+					</div>
+				</div>
+				<div>
+					<canvas id="canvas" width="1024" height="1024">
+						<p>Your browser doesn't support canvas.</p>
+					</canvas>
+				</div>
+			</div>
+		</div>	
+	</body>
+</html>
