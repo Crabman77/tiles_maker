@@ -29,6 +29,7 @@
 			var ctx;
 			var join_type = true;
 			var img_taille = 1024;
+			var img_format = 0;
 			var color = "Black";
 			var tile_w = 9;
 			var tile_h = 3;
@@ -233,6 +234,11 @@
 				canvas.height = img_taille;
 				draw();
 			}
+			function set_img_format()
+			{
+				var x = document.getElementById("img_format");
+				img_format = parseInt(x.value);
+			}			
 			function set_is_normal()
 			{
 				var x = document.getElementById("normal");
@@ -241,7 +247,7 @@
 			}
 			function loadFile(src)
 			{
-				if(!src.type.match(/image.*/)){
+				if(!src.type.match("image/png") && !src.type.match("image/jpeg")){
 					console.log("The dropped file is not an image: ", src.type);
 					return;
 				}
@@ -256,25 +262,34 @@
 				reader.readAsDataURL(src);
 			}
 			function downloadCanvas(){
-			let canvas = document.getElementById("canvas");
-			if (canvas){
-				let image = canvas.toDataURL();
-				// create temporary link
-				let tmpLink = document.createElement('a');
-				//let n = is_normal ? "" : "_normal";
-				var x = document.getElementById("name");
-				let name = "";
-				if (typeof x.value === 'string' || x.value instanceof String) {
-					name = x.value;
+				let canvas = document.getElementById("canvas");
+				if (canvas){
+					if (img_format == 1) {
+						canvas.toBlob(saveImage, "image/jpeg", 1.0);
+					} else {
+						canvas.toBlob(saveImage, "image/png");
+					}
 				}
-				tmpLink.download = (name.length === 0 ? "texture" : name) + '_'+ img_taille + "px_" + (is_normal ? "normal" : "color") + '.png'; // set the name of the download file
-				tmpLink.href = image;
-				// temporarily add link to body and initiate the download
-				document.body.appendChild( tmpLink );
-				tmpLink.click();  
-				document.body.removeChild( tmpLink );
 			}
-		}
+			function saveImage(blobImage){
+				if (blobImage){
+					// create temporary link
+					let tmpLink = document.createElement('a');
+					var x = document.getElementById("name");
+					let name = "";
+					if (typeof x.value === 'string' || x.value instanceof String) {
+						name = x.value.trim();
+					}
+					tmpLink.download = (name.length === 0 ? "texture" : name) + '_'+ img_taille + "px_" + (is_normal ? "normal" : "color") + (img_format == 0 ? ".png" : ".jpg"); // set the name of the download file
+					const href = URL.createObjectURL(blobImage);
+					tmpLink.href = href;
+					// temporarily add link to body and initiate the download
+					document.body.appendChild( tmpLink );
+					tmpLink.click();  
+					document.body.removeChild( tmpLink );
+					window.URL.revokeObjectURL(href);
+				}
+			}
 		</script>
 	</head>
 	<body>
@@ -389,6 +404,13 @@
 							<option value="2048">2048</option>
 							<option value="3072">3072</option>
 							<option value="4096">4096</option>
+						</select>
+					</div>
+					<div class="buttons">
+						<label for="img_format">Format:</label>
+						<select name="img_format" id="img_format" onchange="set_img_format()">
+							<option value="0" selected="selected">png</option>
+							<option value="1">jpeg</option>
 						</select>
 					</div>
 					<div class="buttons">
